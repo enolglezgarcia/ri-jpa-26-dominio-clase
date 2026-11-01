@@ -268,9 +268,6 @@ public class WorkOrder {
             }
         }
         StateChecks.isTrue(isAssigned(), "Work order not assigned");
-        StateChecks.isTrue(
-            !interventions.stream().anyMatch(i -> i.getMechanic().equals(mechanic) && i.getDate().equals(date)),
-            "Duplicated intervention for the same mechanic and date");
         addIntervention(mechanic, date, minutes, substitutions);
     }
 
@@ -317,10 +314,12 @@ public class WorkOrder {
             }
         }
         StateChecks.isTrue(isAssigned() || isFinished(), "Work order neither assigned nor finished");
+
         StateChecks.isTrue(
-            !interventions.stream().anyMatch(i -> i.getMechanic().equals(mechanic) && i.getDate().equals(date)),
+            interventions.stream().noneMatch(
+                i -> i.getMechanic().equals(mechanic) && i.getDate().equals(date.truncatedTo(ChronoUnit.MILLIS))),
             "Duplicated intervention for the same mechanic and date");
-        date.truncatedTo(ChronoUnit.MILLIS);
+        this.date = date.truncatedTo(ChronoUnit.MILLIS);
         new Intervention(mechanic, this, date, minutes, substitutions);
 
     }
